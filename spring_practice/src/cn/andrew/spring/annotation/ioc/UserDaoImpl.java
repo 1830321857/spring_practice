@@ -19,7 +19,17 @@ public class UserDaoImpl implements UserDao{
     }
 
     @Override
+    public void init() {
+        System.out.println("UserDao is inited");
+    }
+
+    @Override
     public void save() {
         System.out.println(name + ",method has been executed...");
+    }
+
+    @Override
+    public void destory() {
+        System.out.println("Object is destroyed");
     }
 }

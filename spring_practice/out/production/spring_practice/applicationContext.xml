@@ -2,10 +2,13 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         https://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context
-        https://www.springframework.org/schema/context/spring-context.xsd">
+        https://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd">
 
     <context:annotation-config/>
 
@@ -13,5 +16,41 @@
 
     <!-- 使用IOC的注解开发，需要配置组件扫描，确认哪些包下面的类使用IOC注解 -->
     <context:component-scan base-package="cn.andrew.spring.annotation" />
+
+
+    <!-- 通过XML方式使用AOP的配置 -->
+    <bean id="productDao" class="cn.andrew.spring.xml.aop.ProductDaoImpl" />
+
+    <!--  将切面类交给Spring管理  -->
+    <bean id="Aspect" class="cn.andrew.spring.xml.aop.Aspect"/>
+
+    <!--通过AOP的配置完成对目标类的代理-->
+    <aop:config>
+        <!--表达式配置那些类的哪些方法需要增强-->
+        <aop:pointcut id="pointCut1" expression="execution(* cn.andrew.spring.xml.aop.ProductDaoImpl.save(..))"/>
+        <aop:pointcut id="pointCut2" expression="execution(* cn.andrew.spring.xml.aop.ProductDaoImpl.delete(..))"/>
+        <aop:pointcut id="pointCut3" expression="execution(* cn.andrew.spring.xml.aop.ProductDaoImpl.update(..))"/>
+        <aop:pointcut id="pointCut4" expression="execution(* cn.andrew.spring.xml.aop.ProductDaoImpl.find(..))"/>
+        
+        <!--配置切面-->
+        <aop:aspect ref="Aspect">
+            <!--前置通知-->
+            <aop:before method="checkPrivilege" pointcut-ref="pointCut1"/>
+            <!--后置通知-->
+            <aop:after-returning method="writeLog" pointcut-ref="pointCut2" returning="productName"/>
+            <!--环绕通知-->
+            <aop:around method="monitorPerformance" pointcut-ref="pointCut3"/>
+
+            <aop:after-throwing method="afterException" pointcut-ref="pointCut4" throwing="exception"/>
+        </aop:aspect>
+    </aop:config>
+
+    <!--通过注解方式使用AOP===============================-->
+    <bean id="OrderDao" class="cn.andrew.spring.annotation.aop.OrderDao" />
+
+    <bean id="Aspect2" class="cn.andrew.spring.annotation.aop.Aspect1"/>
+
+    <!--在配置文件中开启注解的AOP开发-->
+    <aop:aspectj-autoproxy/>
 
 </beans>
